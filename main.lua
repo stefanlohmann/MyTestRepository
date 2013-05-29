@@ -11,6 +11,8 @@ for i = 1, 10, 1 do
     print()
 end
 
+-- was hat es denn nun damit auf sich
+
 display.setStatusBar( display.DefaultStatusBar )
 
 local widget = require "widget"
