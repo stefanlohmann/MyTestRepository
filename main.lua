@@ -12,7 +12,7 @@ for i = 1, 10, 1 do
 end
 
 display.setStatusBar( display.DefaultStatusBar )
--- kommentar
+
 local widget = require "widget"
 local sbHeight = display.statusBarHeight
 local tbHeight = 44
