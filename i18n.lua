@@ -17,14 +17,11 @@ end
 
 local function translate(id)
 
-    print("id: ", id)
-    print("currentLocale: ", currentLocale)
-
     local result = i18n.locales[currentLocale][id]
 
-    if (id == nil) then print("isNil") end
-    if (id == "") then print("isEmpty") end
-print(result)
+--    if (id == nil) then print("isNil") end
+--    if (id == "") then print("isEmpty") end
+--    print(result)
 
     assert(result, ("The id %q was not found in the current locale (%q)"):format(id, currentLocale))
     return result

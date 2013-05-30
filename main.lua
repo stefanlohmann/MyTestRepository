@@ -4,27 +4,28 @@
 -- Load external button/label library (ui.lua should be in the same folder as main.lua)
 local ui = require("ui")
 -- ------------------------------------
---[[
+-- [[
 local i18n = require('i18n')
 require('locales') -- if using a separate file for the locales, require it too
 
+print()
 print("1   ".. i18n.translate('helloWorld') ) -- Hello world
 
--- i18n.setLocale('xy')
+-- i18n.setLocale('xy') -- -> ErrorMessage
 
 i18n.setLocale('de')
--- using i18n() instead of i18n.translate()
-print("3   "..  i18n.translate('helloWorld') ) -- Hallo Welt
---print("3   "..  i18n('helloWorld') ) -- Hallo Welt
+-- using i18n() instead of i18n.translate() -- did not work!!!
+-- print("2   "..  i18n('helloWorld') ) -- gets an error
+print("   "..  i18n.translate('helloWorld') ) -- Hallo Welt
 
 i18n.setLocale('es')
--- using i18n() instead of i18n.translate()
-print("2   "..  i18n.translate('helloWorld') ) -- Hola mundo
--- print("2   "..  i18n('helloWorld') ) -- Hola mundo
+print("   "..  i18n.translate('helloWorld') ) -- Hola mundo
 
+print()
 
-]]
+-- ]]
 -- -----------------------------------
+--[[
 local currentLatitude = 0
 local currentLongitude = 0
 
@@ -167,3 +168,4 @@ end
 
 -- Activate location listener
 Runtime:addEventListener( "location", locationHandler )
+-- ]]
