@@ -1,96 +1,169 @@
 --
--- Created by IntelliJ IDEA.
--- User: S.Lohmann
--- Date: 28.05.13
--- Time: 13:40
--- To change this template use File | Settings | File Templates.
+-- http://developer.coronalabs.com/content/gps
 --
--- found on https://gist.github.com/jonbeebe/1761681
+-- Load external button/label library (ui.lua should be in the same folder as main.lua)
+local ui = require("ui")
+-- ------------------------------------
+--[[
+local i18n = require('i18n')
+require('locales') -- if using a separate file for the locales, require it too
 
-for i = 1, 10, 1 do
-    print()
-end
+print("1   ".. i18n.translate('helloWorld') ) -- Hello world
 
--- was hat es denn nun damit auf sich
+-- i18n.setLocale('xy')
 
-display.setStatusBar( display.DefaultStatusBar )
+i18n.setLocale('de')
+-- using i18n() instead of i18n.translate()
+print("3   "..  i18n.translate('helloWorld') ) -- Hallo Welt
+--print("3   "..  i18n('helloWorld') ) -- Hallo Welt
 
-local widget = require "widget"
-local sbHeight = display.statusBarHeight
-local tbHeight = 44
-local top = sbHeight + tbHeight
+i18n.setLocale('es')
+-- using i18n() instead of i18n.translate()
+print("2   "..  i18n.translate('helloWorld') ) -- Hola mundo
+-- print("2   "..  i18n('helloWorld') ) -- Hola mundo
 
--- forward declarations
-local titleField, noteText, loadSavedNote, saveNote
 
--- create background for the app
-local bg = display.newImageRect( "stripes.jpg", display.contentWidth, display.contentHeight )
-bg:setReferencePoint( display.TopLeftReferencePoint )
-bg.x, bg.y = 0, 0
+]]
+-- -----------------------------------
+local currentLatitude = 0
+local currentLongitude = 0
 
--- create a gradient for the top-half of the toolbar
-local toolbarGradient = graphics.newGradient( {168, 181, 198, 255 }, {139, 157, 180, 255}, "down" )
+display.setStatusBar( display.HiddenStatusBar )
 
--- create toolbar to go at the top of the screen
-local titleBar = widget.newTabBar{
-    top = sbHeight,
-    gradient = toolbarGradient,
-    bottomFill = { 117, 139, 168, 255 },
-    height = 44
+local background = display.newImage("gps_background.png")
+
+local latitude = ui.newLabel{
+    bounds = { 136, 51, 180, 40 },
+    text = "--",
+    font = "DBLCDTempBlack",
+    textColor = { 255, 85, 85, 255 },
+    size = 26,
+    align = "left"
 }
 
--- create embossed text to go on toolbar
-local titleText = display.newEmbossedText( "NOTE", 0, 0, native.systemFontBold, 20 )
-titleText:setReferencePoint( display.CenterReferencePoint )
-titleText:setTextColor( 255 )
-titleText.x = 160
-titleText.y = titleBar.y
-
--- create a shadow underneath the titlebar (for a nice touch)
-local shadow = display.newImage( "shadow.png" )
-shadow:setReferencePoint( display.TopLeftReferencePoint )
-shadow.x, shadow.y = 0, top
-shadow.xScale = 320 / shadow.contentWidth
-shadow.yScale = 0.25
-
--- create load button (top left)
-local loadBtn = widget.newButton{
-    label = "Load",
-    labelColor = { default={255}, over={255} },
-    font = native.systemFontBold,
-    xOffset=2, yOffset=-1,
-    default = "load-default.png",
-    over = "load-over.png",
-    width=60, height=30,
-    left=10, top=28
+local longitude = ui.newLabel{
+    bounds = { 136, 101, 180, 40 },
+    text = "--",
+    font = "DBLCDTempBlack",
+    textColor = { 255, 85, 85, 255 },
+    size = 26,
+    align = "left"
 }
 
--- onRelease listener callback for loadBtn
-local function onLoadRelease( event )
-    loadSavedNote()
-end
-loadBtn.onRelease = onLoadRelease	-- set as loadBtn's onRelease listener
-
--- create save button (top right)
-local saveBtn = widget.newButton{
-    label = "Save",
-    labelColor = { default={255}, over={255} },
-    font = native.systemFontBold,
-    xOffset=2, yOffset=-1,
-    default = "save-default.png",
-    over = "save-over.png",
-    width=60, height=30,
-    left=display.contentWidth-70, top=28
+local altitude = ui.newLabel{
+    bounds = { 136, 151, 180, 40 },
+    text = "--",
+    font = "DBLCDTempBlack",
+    textColor = { 255, 85, 85, 255 },
+    size = 26,
+    align = "left"
 }
 
--- onRelease listener callback for saveBtn
-local function onSaveRelease( event )
-    saveNote()
-end
-saveBtn.onRelease = onSaveRelease	-- set as saveBtn's onRelease listener
+local accuracy = ui.newLabel{
+    bounds = { 136, 201, 180, 40 },
+    text = "--",
+    font = "DBLCDTempBlack",
+    textColor = { 255, 85, 85, 255 },
+    size = 26,
+    align = "left"
+}
 
--- display warning that will show at the bottom of screen
-local warning = display.newImageRect( "warning.png", 300, 180 )
-warning:setReferencePoint( display.BottomCenterReferencePoint )
-warning.x = display.contentWidth * 0.5
-warning.y = display.contentHeight - 28
+local speed = ui.newLabel{
+    bounds = { 136, 251, 180, 40 },
+    text = "--",
+    font = "DBLCDTempBlack",
+    textColor = { 255, 85, 85, 255 },
+    size = 26,
+    align = "left"
+}
+
+local direction = ui.newLabel{
+    bounds = { 136, 301, 180, 40 },
+    text = "--",
+    font = "DBLCDTempBlack",
+    textColor = { 255, 85, 85, 255 },
+    size = 26,
+    align = "left"
+}
+
+local time = ui.newLabel{
+    bounds = { 136, 351, 180, 40 },
+    text = "--",
+    font = "DBLCDTempBlack",
+    textColor = { 255, 85, 85, 255 },
+    size = 26,
+    align = "left"
+}
+
+local remark = ui.newLabel{
+    bounds = { 100, 501, 180, 40 },
+    text = "--",
+    font = "DBLCDTempBlack",
+    textColor = { 255, 85, 85, 255 },
+    size = 26,
+    align = "left"
+}
+
+local buttonPress = function( event )
+-- Show location on map
+    mapURL = "http://maps.google.com/maps?q=Hello,+Corona!@" .. currentLatitude .. "," .. currentLongitude
+    system.openURL( mapURL )
+end
+
+
+local button1 = ui.newButton{
+    default = "buttonRust.png",
+    over = "buttonRustOver.png",
+    onPress = buttonPress,
+    text = "Show on Map",
+    font = "TrebuchetMS-Bold",
+    size = 22,
+    textColor = { 200, 200, 200, 255 },
+    emboss = true,
+    x = 160,
+    y = 422
+}
+
+local locationHandler = function( event )
+    local latitudeText = string.format( '%.4f', event.latitude )
+    currentLatitude = latitudeText
+    latitude:setText( latitudeText )
+
+    local longitudeText = string.format( '%.4f', event.longitude )
+    currentLongitude = longitudeText
+    longitude:setText( longitudeText )
+
+    local altitudeText = string.format( '%.3f', event.altitude )
+    altitude:setText( altitudeText )
+
+    local accuracyText = string.format( '%.3f', event.accuracy )
+    accuracy:setText( accuracyText )
+
+    local speedText = string.format( '%.3f', event.speed )
+    speed:setText( speedText )
+
+    local directionText = string.format( '%.3f', event.direction )
+    direction:setText( directionText )
+
+    local remarkText = "Lets Test Some"
+    remark:setText(remarkText)
+
+    -- Note: event.time is a Unix-style timestamp, expressed in seconds since Jan. 1, 1970
+    local timeText = string.format( '%.0f', event.time )
+    time:setText( timeText )
+end
+
+-- Determine if running on Corona Simulator
+--
+local isSimulator = "simulator" == system.getInfo("environment")
+
+-- Location Events is not supported on Simulator
+--
+if isSimulator then
+    msg = display.newText( "Location events not supported on Simulator!", 0, 230, "Verdana-Bold", 13 )
+    msg.x = display.contentWidth/2          -- center title
+    msg:setTextColor( 255,255,255 )
+end
+
+-- Activate location listener
+Runtime:addEventListener( "location", locationHandler )
